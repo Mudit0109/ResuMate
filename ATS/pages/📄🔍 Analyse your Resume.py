@@ -1,4 +1,3 @@
-from dotenv import load_dotenv
 import base64
 import streamlit as st
 import os
@@ -7,9 +6,9 @@ from PIL import Image
 import pdf2image
 import google.generativeai as genai
 
-# Load environment variables
-load_dotenv()
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+
+GOOGLE_API_KEY = st.secrets["API_KEYS"]["GOOGLE_API_KEY"]
+genai.configure(api_key=GOOGLE_API_KEY)
 
 # Helper Functions
 def get_gemini_response(input, pdf_content, prompt):
