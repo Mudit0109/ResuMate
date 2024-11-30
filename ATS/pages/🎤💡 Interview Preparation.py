@@ -2,14 +2,11 @@ import os
 import io
 import base64
 import streamlit as st
-from dotenv import load_dotenv
 import google.generativeai as genai
 
 # Load environment variables
-load_dotenv()
-
-# Configure Google Generative AI
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+GOOGLE_API_KEY = st.secrets["API_KEYS"]["GOOGLE_API_KEY"]
+genai.configure(api_key=GOOGLE_API_KEY)
 
 # Function to get AI response
 def get_interview_coaching_response(job_description, prompt):
