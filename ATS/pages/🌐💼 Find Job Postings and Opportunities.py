@@ -2,17 +2,13 @@ import streamlit as st
 import http.client
 import json
 from urllib.parse import quote
-from dotenv import load_dotenv
 import os
-
-# Load environment variables from the .env file
-load_dotenv()
 
 # Fetch job data from the API
 def fetch_jobs(query, location, remote_only, employment_types):
     conn = http.client.HTTPSConnection("jobs-api14.p.rapidapi.com")
     headers = {
-        'x-rapidapi-key': os.getenv("RAPIDAPI_KEY"),
+        'x-rapidapi-key': st.secrets["API_KEYS"]["RAPIDAPI_KEY"],
         'x-rapidapi-host': "jobs-api14.p.rapidapi.com"
     }
     
