@@ -5,3 +5,4 @@ python-dotenv
 pdf2image
 Pillow
 requests
+pymupdf
