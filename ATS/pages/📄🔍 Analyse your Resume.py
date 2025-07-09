@@ -1,41 +1,42 @@
 import base64
 import streamlit as st
-import os
 import io
 from PIL import Image
-import pdf2image
+import fitz  # PyMuPDF
 import google.generativeai as genai
 
-
+# Load Gemini API Key from secrets
 GOOGLE_API_KEY = st.secrets["API_KEYS"]["GOOGLE_API_KEY"]
 genai.configure(api_key=GOOGLE_API_KEY)
 
-# Helper Functions
+# Function to get Gemini AI response
 def get_gemini_response(input, pdf_content, prompt):
     model = genai.GenerativeModel('gemini-1.5-flash')
     response = model.generate_content([input, pdf_content[0], prompt])
     return response.text
 
+# Function to convert first page of uploaded PDF to base64-encoded JPEG
 def input_pdf_setup(uploaded_file):
     if uploaded_file is not None:
-        images = pdf2image.convert_from_bytes(uploaded_file.read())
-        first_page = images[0]
-
-        img_byte_arr = io.BytesIO()
-        first_page.save(img_byte_arr, format='JPEG')
-        img_byte_arr = img_byte_arr.getvalue()
+        doc = fitz.open(stream=uploaded_file.read(), filetype="pdf")
+        page = doc.load_page(0)  # Get first page
+        pix = page.get_pixmap()  # Convert to image
+        img_byte_arr = io.BytesIO(pix.tobytes("jpeg"))
 
         pdf_parts = [
             {
                 "mime_type": "image/jpeg",
-                "data": base64.b64encode(img_byte_arr).decode()
+                "data": base64.b64encode(img_byte_arr.getvalue()).decode()
             }
         ]
         return pdf_parts
     else:
         raise FileNotFoundError("No file uploaded")
 
-# UI Design with Streamlit
+# ----- Streamlit UI -----
+
+st.set_page_config(page_title="Resume Analyzer", layout="wide")
+
 st.markdown(
     """
     <style>
@@ -74,9 +75,9 @@ st.markdown(
     """, unsafe_allow_html=True
 )
 
-st.markdown('<div class="main-header"><h1>Resume Analyzer Using AI Expertise</h1></div>', unsafe_allow_html=True)
+st.markdown('<div class="main-header"><h1>📄 Resume Analyzer Using AI Expertise</h1></div>', unsafe_allow_html=True)
 
-# Input Fields
+# Input fields
 st.markdown('<div class="subheader">Enter Job Description:</div>', unsafe_allow_html=True)
 input_text = st.text_area("Paste the Job Description below:", key="job_description")
 
@@ -112,7 +113,7 @@ Identify the key terms, skills, and qualifications in the job description and co
 List missing keywords and suggest improvements to better align the resume with the job description.
 """
 
-# Responses
+# Handlers
 if submit1:
     if uploaded_file is not None and input_text.strip():
         pdf_content = input_pdf_setup(uploaded_file)
